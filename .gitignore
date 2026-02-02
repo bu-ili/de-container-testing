@@ -1,0 +1,21 @@
+# Environment files
+.env
+*.env
+
+# Backup files
+*.backup
+
+# Helm charts (large, can be downloaded)
+dagster/
+
+# macOS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log

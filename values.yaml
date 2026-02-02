@@ -1,0 +1,172 @@
+---
+global:
+  postgresqlSecretName: "dagster-postgresql-secret"
+  dagsterHome: "/opt/dagster/dagster_home"
+
+nameOverride: ""
+fullnameOverride: ""
+rbacEnabled: true
+imagePullSecrets: []
+
+####################################################################################################
+# Dagster Webserver
+####################################################################################################
+dagsterWebserver:
+  replicaCount: 1
+  service:
+    type: ClusterIP
+    port: 80
+
+####################################################################################################
+# Compute Log Manager
+####################################################################################################
+computeLogManager:
+  type: NoOpComputeLogManager
+  config: {}
+
+####################################################################################################
+# User Code Deployments
+####################################################################################################
+dagster-user-deployments:
+  enabled: true
+  enableSubchart: true
+  imagePullSecrets: []
+
+  deployments:
+    - name: "bulletin-dataload"
+      image:
+        repository: "k3d-registry:5000/de-datalake-bulletin-dataload"
+        tag: "latest"
+        pullPolicy: Always
+      port: 4000
+      envSecrets:
+        - name: bulletin-env
+
+####################################################################################################
+# Scheduler
+####################################################################################################
+scheduler:
+  type: DagsterDaemonScheduler
+  config: {}
+
+####################################################################################################
+# Run Launcher (K8sRunLauncher)
+####################################################################################################
+runLauncher:
+  type: K8sRunLauncher
+  config:
+    k8sRunLauncher:
+      imagePullPolicy: "Always"
+      jobNamespace: ~
+      loadInclusterConfig: true
+      envConfigMaps: []
+      envSecrets: []
+
+####################################################################################################
+# PostgreSQL
+####################################################################################################
+postgresql:
+  enabled: true
+  image:
+    registry: "docker.io"
+    repository: "library/postgres"
+    tag: "14.6"
+    pullPolicy: IfNotPresent
+  postgresqlHost: ""
+  postgresqlUsername: dagster
+  postgresqlPassword: dagster
+  postgresqlDatabase: dagster
+  postgresqlParams: {}
+  service:
+    port: 5432
+
+generatePostgresqlPasswordSecret: true
+
+####################################################################################################
+# RabbitMQ: Disabled (not needed for K8sRunLauncher)
+####################################################################################################
+rabbitmq:
+  enabled: false
+
+####################################################################################################
+# Redis: Disabled (not needed for K8sRunLauncher)
+####################################################################################################
+redis:
+  enabled: false
+  internal: false
+
+####################################################################################################
+# Flower: Disabled (only for Celery)
+####################################################################################################
+flower:
+  enabled: false
+
+####################################################################################################
+# Ingress
+####################################################################################################
+ingress:
+  enabled: true
+  annotations: {}
+  labels: {}
+
+  dagsterWebserver:
+    host: "dagster.local"
+    path: "/"
+    pathType: Prefix
+    tls:
+      enabled: false
+      secretName: ""
+
+####################################################################################################
+# Dagster Daemon
+####################################################################################################
+dagsterDaemon:
+  enabled: true
+  heartbeatTolerance: 300
+
+  runCoordinator:
+    enabled: true
+    type: QueuedRunCoordinator
+    config:
+      queuedRunCoordinator:
+        maxConcurrentRuns: 10
+        tagConcurrencyLimits: []
+        dequeueIntervalSeconds: 5
+
+  runMonitoring:
+    enabled: true
+    startTimeoutSeconds: 300
+    pollIntervalSeconds: 120
+
+  runRetries:
+    enabled: true
+    maxRetries: 0
+
+  sensors:
+    useThreads: true
+    numWorkers: 4
+
+  schedules:
+    useThreads: true
+    numWorkers: 4
+
+####################################################################################################
+# Service Account
+####################################################################################################
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+
+####################################################################################################
+# Telemetry
+####################################################################################################
+telemetry:
+  enabled: false
+
+####################################################################################################
+# Data Retention
+####################################################################################################
+retention:
+  enabled: false
+
