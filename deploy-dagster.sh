@@ -23,10 +23,28 @@ kubectl wait --for=delete namespace/dagster --timeout=30s
 echo "Cleanup complete."
 echo ""
 
-echo "Creating fresh namespace and secret..."
+echo "Creating fresh namespace and secrets..."
 kubectl create namespace dagster
+
+# Create GHCR image pull secret if credentials are available
+if [ -n "$GHCR_USERNAME" ] && [ -n "$GHCR_TOKEN" ]; then
+  echo "Creating GHCR image pull secret..."
+  kubectl create secret docker-registry ghcr-secret \
+    --docker-server=ghcr.io \
+    --docker-username="$GHCR_USERNAME" \
+    --docker-password="$GHCR_TOKEN" \
+    --namespace=dagster
+  echo "GHCR secret created."
+else
+  echo "Warning: GHCR_USERNAME or GHCR_TOKEN not set in environment."
+  echo "Skipping GHCR secret creation. If needed, create manually or set:"
+  echo "  export GHCR_USERNAME='your-username'"
+  echo "  export GHCR_TOKEN='ghp_xxxxx'"
+fi
+
+# Create bulletin environment secret
 kubectl create secret generic bulletin-env --from-env-file=$HOME/Dev/de-datalake-bulletin-dataload/.env -n dagster
-echo "Configured namespace and secret."
+echo "Configured namespace and secrets."
 echo ""
 
 echo "Installing Dagster Helm chart..."

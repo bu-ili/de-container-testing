@@ -80,9 +80,52 @@ The deploy script creates a Kubernetes secret from this file.
 
 ## Scripts
 
+### Cluster Management
 - `setup-cluster.sh` - Create k3d cluster with registry
-- `build-and-push.sh` - Build and push Docker image
 - `deploy-dagster.sh` - Deploy Dagster with Helm (idempotent)
+
+### Configuration
+- `bulletin.conf` - Configuration for bulletin dataload project (image tags, deployment)
+
+### Development Scripts
+- `build-and-push.sh` - Build from source and push to k3d registry (fast local iteration)
+- `sync-from-ghcr.sh` - Pull bulletin image from GHCR and sync to k3d (production-like testing)
+
+## Workflows
+
+### Local Build (Fast Iteration)
+Use when you need instant feedback:
+```bash
+# Make code changes
+vim ~/Dev/de-datalake-bulletin-dataload/src/...
+
+# Build and push locally (30s - 2min)
+cd ~/Dev/de-container-testing
+./build-and-push.sh
+```
+
+### GitHub Build (Production-like)
+Use for validation with production build process:
+```bash
+# Push to GitHub
+cd ~/Dev/de-datalake-bulletin-dataload
+git push origin dev
+
+# Monitor build at: https://github.com/bu-ili/de-datalake-bulletin-dataload/actions
+# When complete, sync to k3d
+cd ~/Dev/de-container-testing
+./sync-from-ghcr.sh
+```
+
+## Setup for GHCR Sync
+
+### One-time setup:
+```bash
+# Login to GitHub Container Registry
+docker login ghcr.io -u YOUR_USERNAME -p YOUR_GITHUB_TOKEN
+```
+
+Get a GitHub Personal Access Token with `read:packages` scope at https://github.com/settings/tokens
 
 ## Clean Slate Deployment
 

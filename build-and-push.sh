@@ -1,10 +1,10 @@
 #!/bin/bash
 set -e
 
-echo "Building and pushing de-datalake-bulletin-dataload image..."
+echo "Building and pushing de-bulletin image..."
 
 PROJECT_PATH="$HOME/Dev/de-datalake-bulletin-dataload"
-IMAGE_NAME="localhost:5000/de-datalake-bulletin-dataload:latest"
+IMAGE_NAME="localhost:5000/de-bulletin:latest"
 
 # Check if project exists
 if [ ! -d "$PROJECT_PATH" ]; then

@@ -30,13 +30,14 @@ computeLogManager:
 dagster-user-deployments:
   enabled: true
   enableSubchart: true
-  imagePullSecrets: []
+  imagePullSecrets:
+    - name: ghcr-secret
 
   deployments:
     - name: "bulletin-dataload"
       image:
-        repository: "k3d-registry:5000/de-datalake-bulletin-dataload"
-        tag: "latest"
+        repository: "ghcr.io/bu-ili/de-bulletin"
+        tag: "dev"
         pullPolicy: Always
       port: 4000
       envSecrets:
